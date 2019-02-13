@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class DeActive : MonoBehaviour {
 
+    [SerializeField]
+    private float timeDelay;
     private void OnEnable()
     {
         StartCoroutine(Delay());
@@ -11,7 +13,7 @@ public class DeActive : MonoBehaviour {
 
     IEnumerator Delay()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(timeDelay);
         gameObject.SetActive(false);
     }
 }

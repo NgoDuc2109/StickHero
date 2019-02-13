@@ -29,7 +29,6 @@ public class StickScale : MonoBehaviour
     private LineRenderer stickLine;
 
 
-    private float startAngle = 20;
     private float endAngle = -170;
     private float currentAngle = 0;
     private float currentPlayerAngle = 0;
@@ -48,6 +47,7 @@ public class StickScale : MonoBehaviour
         stickLine = GetComponent<LineRenderer>();
         stickCollider = gameObject.GetComponent<BoxCollider2D>();
         stickCollider.enabled = false;
+        Application.targetFrameRate = 60;
     }
 
     public void EnableTrail()
@@ -65,7 +65,7 @@ public class StickScale : MonoBehaviour
         Vector3 endPos = stickLine.GetPosition(1);
         stickCollider.enabled = true;
         stickCollider.offset = Vector2.up * endPos.y / 2;
-        stickCollider.size = new Vector2(0.08f, endPos.y);
+        stickCollider.size = new Vector2(0.1f, endPos.y);
 
         currentPlayerAngle = Mathf.Lerp(currentPlayerAngle, -30, Time.fixedDeltaTime * speedFight);
         player.transform.rotation = Quaternion.Euler(0, 0, currentPlayerAngle);
@@ -130,7 +130,6 @@ public class StickScale : MonoBehaviour
     {
         if (col.CompareTag(Const.Tag.MELON))
         {
-            Debug.Log("hit melon");
             AudioManager.Instance.PlaySound(Const.Audio.SLIDEWATERMELON);
             hitMelon++;
         }
@@ -142,7 +141,6 @@ public class StickScale : MonoBehaviour
         {
             hitTower++;
             AudioManager.Instance.PlaySound(Const.Audio.HITPLATFORM);
-            Debug.Log("hit tower");
         }
     }
 }

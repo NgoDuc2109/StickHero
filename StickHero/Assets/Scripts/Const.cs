@@ -11,6 +11,7 @@ public class Const : MonoBehaviour
         public const string MELON = "Melon";
         public const string TRANSFORM = "Tranform";
         public const string STICK = "Stick";
+        public const string STAR = "Star";
     }
 
     public static class Audio
@@ -21,6 +22,8 @@ public class Const : MonoBehaviour
         public const string LANDING = "Landing";
         public const string SLIDE = "Slide";
         public const string DEAD = "Dead";
+        public const string SCORE = "Score";
+        public const string EATFRUIT = "EattingFruit";
     }
 
     public static class Scenes
@@ -31,5 +34,11 @@ public class Const : MonoBehaviour
     public static class ScoreInfo
     {
         public const string BESTSCORE = "BestScore";
+        public const string TOTALSTAR = "TotalStar";
+    }
+
+    public static class Anim
+    {
+        public const string SCALE = "scaleText";
     }
 }

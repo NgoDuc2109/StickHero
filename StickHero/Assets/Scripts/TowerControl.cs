@@ -22,6 +22,7 @@ public class TowerControl : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
     }
     private void Start()
     {
@@ -50,6 +51,7 @@ public class TowerControl : MonoBehaviour
                 towers.Add(clone);
                 GameObject melon = PoolsManager.Instance.RetrieveMelonFromPool();
                 InitMelon(melon);
+                totalMelonInTurn = 1;
             }
         }
     }
@@ -66,11 +68,31 @@ public class TowerControl : MonoBehaviour
         clone.transform.rotation = Quaternion.identity;
         towers.Add(clone);
         clone.SetActive(false);
-        GameObject melon = PoolsManager.Instance.RetrieveMelonFromPool();
-        SetInfoMeLon(melon);
-        TowerControl.Instance.towers.RemoveAt(0);
+        float temp = Random.Range(-2,10);
+        CreateTotalMelon(temp);
+        towers.RemoveAt(0);
         StartCoroutine(MoveObject(clone, distance));
     }
+
+    public int totalMelonInTurn = 0;
+    private void CreateTotalMelon(float temp)
+    {
+        if (temp >0)
+        {
+            GameObject melon = PoolsManager.Instance.RetrieveMelonFromPool();
+            SetInfoMeLon(melon);
+            totalMelonInTurn = 1;
+        }
+        else
+        {
+            GameObject melon1 = PoolsManager.Instance.RetrieveMelonFromPool();
+            SetInfoMeLon(melon1);
+            GameObject melon2 = PoolsManager.Instance.RetrieveMelonFromPool();
+            SetInfoMeLon(melon2);
+            totalMelonInTurn = 2;
+        }
+    }
+
 
     /// <summary>
     /// di chuyển tháp mới về vị trí đúng

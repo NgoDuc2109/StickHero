@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
-    private int numPoints = 40;
-    private Vector3[] positions = new Vector3[40];
+    #region  ListBezierPoit
+    private int numPoints = 400;
+    private Vector3[] positions = new Vector3[400];
+    #endregion
 
     private Rigidbody2D rb;
-
+    bool isGameOver;
+    public bool isFly;
     public static PlayerMovement Instance;
     private void Awake()
     {
@@ -37,12 +40,11 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    bool isGameOver;
+
     private void GameOver()
     {
         StartCoroutine(DisalbePlayer());
         isGameOver = true;
-        Debug.Log("Game over");
         AudioManager.Instance.PlaySound(Const.Audio.DEAD);
         UIInGameManager.Instance.ShowGameOverPanel();
         rb.gravityScale = 20;
@@ -54,29 +56,53 @@ public class PlayerMovement : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+
     public IEnumerator CheckCondition()
     {
         isFly = true;
         yield return new WaitForSeconds(1f);
         if (StickScale.Instance.hitMelon > 0 && StickScale.Instance.hitTower == 0)
         {
-            DrawCurve();
-            ScoreManager.Instance.AddScore(StickScale.Instance.hitMelon);
-            UIInGameManager.Instance.SetScoreUI();
-            LeanTween.move(gameObject, positions, 0.5f);
-            ScrollBG.Instance.IsLock = false;
-            yield return new WaitForSeconds(0.5f);
-            ScrollBG.Instance.IsLock = true;
-            isFly = false;
-            StickScale.Instance.hitMelon = 0;
+            //th1 : turn chỉ có 1 quả dưa
+            if (StickScale.Instance.hitMelon == 1 && TowerControl.Instance.totalMelonInTurn == 1)
+            {
+                DrawCurve();
+                ScoreManager.Instance.AddScore(StickScale.Instance.hitMelon);
+                UIInGameManager.Instance.SetScoreUI();
+                LeanTween.move(gameObject, positions, 0.5f);
+                ScrollBG.Instance.IsLock = false;
+                yield return new WaitForSeconds(0.5f);
+                ScrollBG.Instance.IsLock = true;
+                isFly = false;
+                StickScale.Instance.hitMelon = 0;
+            }
+            //th2 : turn có 2 quả dưa
+            else if (StickScale.Instance.hitMelon == 2 && TowerControl.Instance.totalMelonInTurn == 2)
+            {
+                Debug.Log("perfect");
+                UIInGameManager.Instance.EnablePerfectText();
+                DrawCurve();
+                ScoreManager.Instance.AddScore(StickScale.Instance.hitMelon +1);
+                UIInGameManager.Instance.SetScoreUI();
+                LeanTween.move(gameObject, positions, 0.5f);
+                ScrollBG.Instance.IsLock = false;
+                yield return new WaitForSeconds(0.5f);
+                ScrollBG.Instance.IsLock = true;
+                isFly = false;
+                StickScale.Instance.hitMelon = 0;
+            }
+            else if (StickScale.Instance.hitMelon < 2 && TowerControl.Instance.totalMelonInTurn == 2)
+            {
+                GameOver();
+            }
+            
         }
-        else if((StickScale.Instance.hitMelon == 0 && StickScale.Instance.firstAttack == true))
+        else if ((StickScale.Instance.hitMelon == 0 && StickScale.Instance.firstAttack == true))
         {
             GameOver();
         }
 
     }
-
     private void OnTriggerEnter2D(Collider2D col)
     {
         if (col.CompareTag(Const.Tag.TRANSFORM))
@@ -85,9 +111,16 @@ public class PlayerMovement : MonoBehaviour
             AudioManager.Instance.PlaySound(Const.Audio.LANDING);
             StickScale.Instance.RefreshStick();
         }
+        if (col.CompareTag(Const.Tag.STAR))
+        {
+            col.gameObject.SetActive(false);
+            AudioManager.Instance.PlaySound(Const.Audio.EATFRUIT);
+            PlayerPrefs.SetInt(Const.ScoreInfo.TOTALSTAR, PlayerPrefs.GetInt(Const.ScoreInfo.TOTALSTAR) + 1);
+            UIInGameManager.Instance.ShowTotalStarOnUI();
+        }
     }
 
-    public bool isFly;
+
 
     private void DrawCurve()
     {
@@ -113,8 +146,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-
-    private Vector3 currentWaypoint;
     Vector3 CalculateLinearBezierPoint(float t, Vector3 p0, Vector3 p1, Vector3 p2)
     {
         float u = 1 - t;
