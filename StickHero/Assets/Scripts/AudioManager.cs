@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.UI;
+
 [System.Serializable]
 public class Sound
 {
     public AudioMixerGroup audioMixer;
-    private AudioSource source;
+    public AudioSource source;
     public string clipName;
     public AudioClip clip;
     [Range(0, 1)]
@@ -45,8 +47,7 @@ public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
 
-    [SerializeField]
-    private List<Sound> sound;
+    public List<Sound> sound;
     private void Awake()
     {
         if (Instance == null)
@@ -57,10 +58,6 @@ public class AudioManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-    }
-
-    private void Start()
-    {
         for (int i = 0; i < sound.Count; i++)
         {
             GameObject _go = new GameObject("Sound" + i + "_" + sound[i].clipName);
@@ -68,6 +65,11 @@ public class AudioManager : MonoBehaviour
             sound[i].SetSource(_go.AddComponent<AudioSource>());
         }
 
+        DontDestroyOnLoad(gameObject);
+    }
+
+    private void Start()
+    {
         PlaySound(Const.Audio.BACKGROUND);
     }
 
@@ -78,6 +80,26 @@ public class AudioManager : MonoBehaviour
             if (sound[i].clipName == _name)
             {
                 sound[i].Play();
+                return;
+            }
+        }
+    }
+
+    public void SetLoop(string _name , bool isLoop)
+    {
+        for (int i = 0; i < sound.Count; i++)
+        {
+            if (sound[i].clipName == _name)
+            {
+                if (isLoop == true)
+                {
+                    sound[i].loop = true;
+                }
+                else
+                {
+                    sound[i].loop = false;
+                    sound[i].source.Stop();
+                }
                 return;
             }
         }
@@ -100,4 +122,5 @@ public class AudioManager : MonoBehaviour
 
         }
     }
+    
 }

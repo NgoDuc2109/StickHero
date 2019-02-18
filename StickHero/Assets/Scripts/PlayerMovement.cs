@@ -3,14 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
-    #region  ListBezierPoit
-    private int numPoints = 400;
-    private Vector3[] positions = new Vector3[400];
-    #endregion
-
-    private Rigidbody2D rb;
-    bool isGameOver;
-    public bool isFly;
+    #region Singleton
     public static PlayerMovement Instance;
     private void Awake()
     {
@@ -23,6 +16,15 @@ public class PlayerMovement : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    #endregion
+    #region  ListBezierPoit
+    private int numPoints = 400;
+    private Vector3[] positions = new Vector3[400];
+    #endregion
+    public bool isFly;
+    private Rigidbody2D rb;
+    private bool isGameOver;
+
 
     private void Start()
     {
@@ -41,6 +43,9 @@ public class PlayerMovement : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// game over
+    /// </summary>
     private void GameOver()
     {
         StartCoroutine(DisalbePlayer());
@@ -50,13 +55,41 @@ public class PlayerMovement : MonoBehaviour
         rb.gravityScale = 20;
         gameObject.transform.GetChild(0).gameObject.SetActive(false);
     }
+
+
+    /// <summary>
+    /// disable player trên hyerachy
+    /// </summary>
+    /// <returns></returns>
     IEnumerator DisalbePlayer()
     {
         yield return new WaitForSeconds(1f);
         gameObject.SetActive(false);
     }
 
+    /// <summary>
+    /// quay player khi player đang nhảy
+    /// </summary>
+    /// <param name="duration">tổng thời gian quay trên không</param>
+    /// <returns></returns>
+    IEnumerator Rotate(float duration)
+    {
+        float startRotation = transform.eulerAngles.z;
+        float endRotation = startRotation - 360.0f;
+        float t = 0.0f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            float zRotation = Mathf.Lerp(startRotation, endRotation, t / duration) % 360.0f;
+            transform.eulerAngles = new Vector3(transform.eulerAngles.x,transform.eulerAngles.y,zRotation);
+            yield return null;
+        }
+    }
 
+    /// <summary>
+    /// kiểm tra điều kiện 
+    /// </summary>
+    /// <returns></returns>
     public IEnumerator CheckCondition()
     {
         isFly = true;
@@ -69,7 +102,8 @@ public class PlayerMovement : MonoBehaviour
                 DrawCurve();
                 ScoreManager.Instance.AddScore(StickScale.Instance.hitMelon);
                 UIInGameManager.Instance.SetScoreUI();
-                LeanTween.move(gameObject, positions, 0.5f);
+                LeanTween.move(gameObject, positions, 0.5f); // lệnh này di chuyển player theo mảng các vị trí positions , mảng này được tính toán theo bezier (tải leantween về để dùng được lệnh này)
+                StartCoroutine( Rotate(0.4f));
                 ScrollBG.Instance.IsLock = false;
                 yield return new WaitForSeconds(0.5f);
                 ScrollBG.Instance.IsLock = true;
@@ -79,12 +113,12 @@ public class PlayerMovement : MonoBehaviour
             //th2 : turn có 2 quả dưa
             else if (StickScale.Instance.hitMelon == 2 && TowerControl.Instance.totalMelonInTurn == 2)
             {
-                Debug.Log("perfect");
                 UIInGameManager.Instance.EnablePerfectText();
                 DrawCurve();
                 ScoreManager.Instance.AddScore(StickScale.Instance.hitMelon +1);
                 UIInGameManager.Instance.SetScoreUI();
                 LeanTween.move(gameObject, positions, 0.5f);
+                StartCoroutine(Rotate(0.4f));
                 ScrollBG.Instance.IsLock = false;
                 yield return new WaitForSeconds(0.5f);
                 ScrollBG.Instance.IsLock = true;
@@ -103,6 +137,11 @@ public class PlayerMovement : MonoBehaviour
         }
 
     }
+
+    /// <summary>
+    /// kiểm tra va chạm
+    /// </summary>
+    /// <param name="col">collider va chạm với player</param>
     private void OnTriggerEnter2D(Collider2D col)
     {
         if (col.CompareTag(Const.Tag.TRANSFORM))
@@ -121,7 +160,9 @@ public class PlayerMovement : MonoBehaviour
     }
 
 
-
+    /// <summary>
+    /// vẽ ra 1 mảng các point theo thuật toán bezier
+    /// </summary>
     private void DrawCurve()
     {
         float y;
@@ -146,6 +187,15 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+
+    /// <summary>
+    /// thuật toán bezier
+    /// </summary>
+    /// <param name="t"></param>
+    /// <param name="p0"></param>
+    /// <param name="p1"></param>
+    /// <param name="p2"></param>
+    /// <returns></returns>
     Vector3 CalculateLinearBezierPoint(float t, Vector3 p0, Vector3 p1, Vector3 p2)
     {
         float u = 1 - t;

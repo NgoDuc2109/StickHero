@@ -3,14 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 public class TowerControl : MonoBehaviour
 {
+    #region Singleton
     public static TowerControl Instance;
-    [SerializeField]
-    private float offset;
-    public List<GameObject> towers;
-    [SerializeField]
-    float minY, maxY;
-
-    public GameObject player;
     private void Awake()
     {
 
@@ -24,60 +18,90 @@ public class TowerControl : MonoBehaviour
         }
 
     }
+    #endregion
+    [SerializeField]
+    private float offset;
+    public List<GameObject> towers;
+    [SerializeField]
+    private GameObject player;
+
+
+
+    [Header("Param Mode 2")]
+    public int totalMelonInTurn = 0;
+    [SerializeField]
+    private float minY, maxY;
+
+
     private void Start()
     {
         towers = new List<GameObject>();
         InitTower();
     }
-    void InitTower()
+    /// <summary>
+    /// khởi tạo tháp đầu game
+    /// </summary>
+    public void InitTower()
     {
-        for (int i = 0; i < 2; i++)
+        if (Const.isMode1 == false)
         {
-            if (i == 0)
+            for (int i = 0; i < 2; i++)
             {
-                GameObject clone = PoolsManager.Instance.RetrieveTowerFromPool();
-                clone.transform.position = new Vector3(0, Random.Range(minY, maxY), 0);
-                clone.transform.rotation = Quaternion.identity;
-                clone.transform.GetChild(0).gameObject.SetActive(false);
-                player.transform.position = clone.transform.GetChild(0).gameObject.transform.position;
-                towers.Add(clone);
-            }
-            else
-            {
-                float distance = Random.Range(towers[i - 1].transform.position.x + 8, 14);
-                GameObject clone = PoolsManager.Instance.RetrieveTowerFromPool();
-                clone.transform.position = new Vector3(distance, Random.Range(minY, maxY), 0);
-                clone.transform.rotation = Quaternion.identity;
-                towers.Add(clone);
-                GameObject melon = PoolsManager.Instance.RetrieveMelonFromPool();
-                InitMelon(melon);
-                totalMelonInTurn = 1;
+                if (i == 0)
+                {
+                    GameObject clone = PoolsManager.Instance.RetrieveTowerMode2FromPool();
+                    clone.transform.position = new Vector3(0, Random.Range(minY, maxY), 0);
+                    clone.transform.rotation = Quaternion.identity;
+                    clone.transform.GetChild(0).gameObject.SetActive(false);
+                    clone.transform.GetChild(1).gameObject.SetActive(false);
+                    player.transform.position = clone.transform.GetChild(0).gameObject.transform.position;
+                    towers.Add(clone);
+                }
+                else
+                {
+                    float distance = Random.Range(towers[i - 1].transform.position.x + 8, 14);
+                    GameObject clone = PoolsManager.Instance.RetrieveTowerMode2FromPool();
+                    clone.transform.position = new Vector3(distance, Random.Range(minY, maxY), 0);
+                    clone.transform.rotation = Quaternion.identity;
+                    towers.Add(clone);
+
+                    GameObject melon = PoolsManager.Instance.RetrieveMelonFromPool();
+                    InitMelon(melon);
+                    totalMelonInTurn = 1;
+
+                }
             }
         }
     }
 
     /// <summary>
-    /// tạo tháp mới tại vị trí cách vị trí đúng 1 đoạn offset
+    /// tạo tháp mới tại vị trí cách vị trí chuẩn 1 đoạn offset
     /// </summary>
     public void CreateNewTower()
     {
         float distance = Random.Range(towers[towers.Count - 1].transform.position.x + 6, towers[towers.Count - 1].transform.position.x + 14);
-        GameObject clone = PoolsManager.Instance.RetrieveTowerFromPool();
+        GameObject clone = PoolsManager.Instance.RetrieveTowerMode2FromPool();
         clone.transform.GetChild(0).gameObject.SetActive(true);
         clone.transform.position = new Vector3(distance + offset, Random.Range(minY, maxY), 0);
         clone.transform.rotation = Quaternion.identity;
         towers.Add(clone);
         clone.SetActive(false);
-        float temp = Random.Range(-2,10);
+
+        float temp = Random.Range(-2, 10);
         CreateTotalMelon(temp);
+
+
         towers.RemoveAt(0);
         StartCoroutine(MoveObject(clone, distance));
     }
 
-    public int totalMelonInTurn = 0;
+    /// <summary>
+    /// tạo melon
+    /// </summary>
+    /// <param name="temp">giá trị random để xét trường hợp có 1 hay 2 quả dưa</param>
     private void CreateTotalMelon(float temp)
     {
-        if (temp >0)
+        if (temp > 0)
         {
             GameObject melon = PoolsManager.Instance.RetrieveMelonFromPool();
             SetInfoMeLon(melon);
@@ -105,10 +129,12 @@ public class TowerControl : MonoBehaviour
         clone.SetActive(true);
         yield return new WaitForEndOfFrame();
         LeanTween.moveX(clone, distance, 0.3f);
-
     }
 
-
+    /// <summary>
+    /// khởi tạo dưa đầu game
+    /// </summary>
+    /// <param name="melon">quả dưa</param>
     private void InitMelon(GameObject melon)
     {
         GameObject currentTower = towers[0];
@@ -139,6 +165,10 @@ public class TowerControl : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// set info cho quả dưa
+    /// </summary>
+    /// <param name="melon">quả dưa</param>
     void SetInfoMeLon(GameObject melon)
     {
         GameObject currentTower = towers[1];

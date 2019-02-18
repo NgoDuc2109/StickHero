@@ -9,6 +9,7 @@ TagManager:
   - Tranform
   - Stick
   - Star
+  - Die
   layers:
   - Default
   - TransparentFX

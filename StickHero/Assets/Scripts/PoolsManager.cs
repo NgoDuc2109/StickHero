@@ -6,7 +6,7 @@ public class PoolsManager : MonoBehaviour
 {
     public static PoolsManager Instance;
     [SerializeField]
-    private ObjectPoolScript tower;
+    private ObjectPoolScript towerMode2;
     [SerializeField]
     private ObjectPoolScript melon;
     [SerializeField]
@@ -19,11 +19,11 @@ public class PoolsManager : MonoBehaviour
         }
     }
 
-    public GameObject RetrieveTowerFromPool()
+    public GameObject RetrieveTowerMode2FromPool()
     {
         ObjectPoolScript tempPool;
         GameObject obj;
-        tempPool = tower;
+        tempPool = towerMode2;
         //new GameObject named obj and it calls GetPooledObejct on the tempPool. 
         obj = tempPool.GetPooledObject();
         obj.SetActive(true);

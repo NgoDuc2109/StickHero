@@ -14,16 +14,39 @@ public class CameraFollow : MonoBehaviour
 
     private void Start()
     {
-        player = GameObject.FindGameObjectWithTag(Const.Tag.PLAYER);
-        transform.position = new Vector3(player.transform.position.x /*+ 4f*/, transform.position.y, transform.position.z);
+        if (Const.isMode1 == false)
+        {
+            
+            transform.position = new Vector3(player.transform.position.x, transform.position.y, transform.position.z);
+        }
+        else
+        {
+            player = GameObject.FindGameObjectWithTag(Const.Tag.PLAYER);
+            transform.position = new Vector3(player.transform.position.x + 7f, transform.position.y, transform.position.z);
+        }
+            
+       
     }
 
     private void LateUpdate()
     {
-        if (player != null && player.activeInHierarchy == true)
+        if (Const.isMode1 == false)
         {
-            playerPosition = new Vector3(player.transform.position.x + 6f, transform.position.y, transform.position.z);
-            transform.position = Vector3.Lerp(transform.position, new Vector3(playerPosition.x, transform.position.y, playerPosition.z), offsetSmoothing * Time.deltaTime);
+            if (player != null && player.activeInHierarchy == true)
+            {
+                playerPosition = new Vector3(player.transform.position.x + 6f, transform.position.y, transform.position.z);
+                transform.position = Vector3.Lerp(transform.position, new Vector3(playerPosition.x, transform.position.y, playerPosition.z), offsetSmoothing * Time.deltaTime);
+            }
+        }
+
+        else
+        {
+            if (stickScaleMode1.Instance != null && stickScaleMode1.Instance.IsMoveEnd == true)
+            {
+                stickScaleMode1.Instance.IsMoveEnd = false;
+                playerPosition = new Vector3(player.transform.position.x + 7f, transform.position.y, transform.position.z);
+                LeanTween.move(gameObject, playerPosition, 0.3f);
+            }
         }
     }
 }
